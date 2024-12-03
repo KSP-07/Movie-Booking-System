@@ -5,10 +5,10 @@ const {signupUser ,loginUser, fetchUser , updateUser, deleteUser} = require('../
 const authenticate = require('../middlewares/auth');
 const router = express.Router();
 
-router.post('/signup' ,authenticate , signupUser);
-router.post("/login",authenticate , loginUser);
-router.get('/:userId' ,authenticate , fetchUser);
-router.put('/:userId' ,authenticate , updateUser);
-router.delete('/:userId' ,authenticate , deleteUser);
+router.post('/signup' , signupUser);
+router.post("/login" , loginUser);
+router.get('/:userId' ,authenticate() , fetchUser);
+router.put('/:userId' ,authenticate() , updateUser);
+router.delete('/:userId' ,authenticate() , deleteUser);
 
 module.exports = router;

@@ -7,18 +7,21 @@ const params = {
         {AttributeName : "SK" , KeyType : "RANGE"}
     ],
     AttributeDefinitions :[
-        {AttributeNmae : "PK" , AttributeType : "HASh"},
-        {AttributeName : "SK" , AttributeType :  "RANGE"},
+        {AttributeName : "PK" , AttributeType : "S"},
+        {AttributeName : "SK" , AttributeType :  "S"},
         {AttributeName : "ReleaseDate" , AttributeType : "S"},
         {AttributeName : "BookingDate" , AttributeType : "S"},   
-        {AttributeName : "BookingDate" , AttributeType : "S"},   
+        { AttributeName: "Entity", AttributeType: "S" },  //for GSI
+        {AttributeName : "MovieName" , AttributeType : "S"},
+        {AttributeName : "ShowId" , AttributeType : "S"},
+        // {AttributeName : "Email" , AttributeType : "S"}
     ],
     GlobalSecondaryIndexes : [
         {
             IndexName : "MovieReleaseDateIndex",
             KeySchema : [
-                {AttributeName : "PK" , KeyType : "HASH"},
-                {AttributeName : "Movie#ReleaseDate" , KeyType : "RANGE"}
+                { AttributeName: "Entity", KeyType: "HASH" }, 
+                {AttributeName : "ReleaseDate" , KeyType : "RANGE"}
             ],
             Projection :{ProjectionType : "ALL"},
             ProvisionedThroughput : {
@@ -29,8 +32,8 @@ const params = {
         {
             IndexName : "MovieNameIndex",
             KeySchema : [
-                {AttributeName : "PK" , KeyType : "HASH"},
-                {AttributeName : "Movie#MovieName" , KeyType : "RANGE"}
+                { AttributeName: "Entity", KeyType: "HASH" }, 
+                {AttributeName : "MovieName" , KeyType : "RANGE"}
             ],
             Projection :{ProjectionType : "ALL"},
             ProvisionedThroughput : {
@@ -38,14 +41,35 @@ const params = {
                 WriteCapacityUnits : 5,
             }
         },
+        // {
+        //     IndexName: "EmailIndex", // New GSI for Email
+        //     KeySchema: [
+        //       { AttributeName: "PK", KeyType: "HASH" },  // Use PK as HASH key
+        //       { AttributeName: "Email", KeyType: "RANGE" } // Use Email as RANGE key
+        //     ],
+        //     Projection: { ProjectionType: "ALL" }, // Include all attributes in the index   
+        //     ProvisionedThroughput: {
+        //       ReadCapacityUnits: 5, 
+        //       WriteCapacityUnits: 5
+        //     }
+        //   } 
     ],
-    LocalSecondaryIndex :[
+    LocalSecondaryIndexes :[
         {
             IndexName : "BookingDateIndex",
             KeySchema : [
                 {AttributeName : "PK" , KeyType : "HASH"},
-                {AttributeName : "Booking#BookingDate" ,KeyType : "RANGE"}
-            ]     
+                {AttributeName : "BookingDate" ,KeyType : "RANGE"}
+            ],
+            Projection : {ProjectionType : "ALL"}     
+        },
+        {
+            IndexName : "ShowDetails",
+            KeySchema : [
+                {AttributeName : "PK" , KeyType : "HASH"},
+                {AttributeName : "ShowId" ,KeyType : "RANGE"}
+            ],
+            Projection : {ProjectionType : "ALL"}     
         }
     ],
     ProvisionedThroughput :{
@@ -65,7 +89,6 @@ const createTable = async ()=>{
     catch(err){
         console.error("Error creating table " , err);
     }
-
 }
 
 createTable();

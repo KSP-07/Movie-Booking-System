@@ -12,10 +12,12 @@ const BookingModel = {
 
   //get booking by booking id
   getBooking: async (userId, bookingId) => {
+
+    // console.log(userId ,'\n' , bookingId,'-----=');
     const params = {
       TableName: "Movies",
       Key: {
-        PK: `USER#${userId}`,
+        PK: userId,
         SK: bookingId,
       },
     };
@@ -25,13 +27,14 @@ const BookingModel = {
 
   //fetch all booking with pagination
   getBookings: async (userId, limit, startKey) => {
+    console.log(userId , limit , startKey,'====');
     const params = {
       TableName: "Movies",
       KeyConditionExpression:
-        'PK = "userId AND begins_with(SK, :bookingPrefix)',
+        `PK = :userId AND begins_with(SK, :bookingPrefix)`,
       ExpressionAttributeValues: {
         ":userId": userId,
-        ":bookingPrefix": "Booking#",
+        ":bookingPrefix": "BOOKING#",
       },
       Limit: limit,
       ExclusiveStartKey: startKey,
@@ -50,33 +53,88 @@ const BookingModel = {
             '#status': 'Status'
         },
         ExpressionAttributeValues : {
-            ':pk' : `USER#${userId}`,
-            ':prefix' : 'Booking#',
+            ':pk' : userId,
+            ':prefix' : 'BOOKING#',
             ':status' : status,
         }
     };
     const result = await docClient.query(params).promise();
     return result.Items;
   },
+
+//get upcoming bookings filtered by status 
+getUpcomingBookings: async (userId, currentTime) => {
+    const params = {
+        TableName : "Movies",
+        KeyConditionExpression : 'PK = :pk AND SK >= :currentTime',
+        FilterExpression : '#status = :status',
+        ExpressionAttributeNames :{
+          '#status' : 'Status',
+        },
+        ExpressionAttributeValues : {
+            ':pk' : userId,
+            ':status' : 'confirmed',
+            ':currentTime' : currentTime.toString(),
+        }
+    };
+    const result = await docClient.query(params).promise();
+    return result.Items;
+  },
+
+
+
   //cancel a booking
   cancelBooking : async(userId, bookingId)=>{
     const params = {
         TableName : 'Movies',
         Key: {
-            PK : `USER#${userId}`,
+            PK : userId,
             SK : bookingId,
         },
 
         UpdateExpression : 'SET #status = :cancelled',
+        ExpressionAttributeNames :{
+          "#status" : "Status"
+        },
         ExpressionAttributeValues : {
             ':cancelled' : 'Cancelled',
         },
     };
 
-    await docClient.query(params).promise();
+    return await docClient.update(params).promise();
     
   },
 
+  getShowDetails : async(pk, sk)=>{
+    const params = {
+      TableName : 'Movies',
+      Key :{
+        PK : pk,
+        SK : sk,
+      }
+    }
+    const result = await docClient.get(params).promise();
+    console.log(result,'----====')
+    return result;
+  },
+
+
+  updateShowSeats: async (pk,sk, newAvailableSeats) => {
+    const params = {
+        TableName: "Movies",
+        Key: {
+            PK: pk,
+            SK: sk,
+        },
+        UpdateExpression: `SET AvailableSeats = :newSeats`,
+        ExpressionAttributeValues: {
+            ":newSeats": newAvailableSeats,
+        },
+        ReturnValues: "UPDATED_NEW",
+    };
+  
+    await docClient.update(params).promise();
+  },
 
 };
 

@@ -1,14 +1,14 @@
 
 const express = require('express');
 
-const {createMovie, getAllMovies , getMovieDetails, filterMoviesByGenre} = require('../controllers/movieController');
+const {createMovie, getSortedMovies , getMovieDetails, filterByGenre} = require('../controllers/movieController');
 
 const router = express.Router();
 
 
 router.post('/' , createMovie);
+router.get('/sortedList',getSortedMovies); //this i am defining first than movieName route because :movieName is dynamic and it will read sortedList as the prams
+router.get('/filter', filterByGenre);
 router.get('/:movieName',getMovieDetails);
-router.get('/',getAllMovies);
-router.get('/filter', filterMoviesByGenre);
 
 module.exports = router;

@@ -12,39 +12,49 @@ const MovieModel = {
 
 
     getMovieByName : async(movieName)=>{
+        // console.log(movieName,'++++++++++')
         const params = {
             TableName : 'Movies',
             IndexName: 'MovieNameIndex',
-            KeyConditionExpression: 'PK = :pk AND Movie#MovieName = :movieName',
+            KeyConditionExpression: 'Entity = :entity AND MovieName = :movieName',
             ExpressionAttributeValues: {
-              ':pk': 'MOVIE',
+              ':entity': 'MOVIE',
               ':movieName': movieName,
             },
+        };
+
+        const result = await docClient.query(params).promise();
+        // console.log(result.Items);
+        return result;
+    },
+
+
+    getAllMovies : async(ReleaseDate)=>{
+        // console.log(ReleaseDate,'---=====');
+        const params = {
+            TableName : 'Movies',
+            IndexName : 'MovieReleaseDateIndex',
+            KeyConditionExpression : 'Entity = :entity AND begins_with(ReleaseDate, :releaseDate)',
+            ExpressionAttributeValues : {
+                ':entity' : 'MOVIE',
+                ':releaseDate' : ReleaseDate,
+            },
+            ScanIndexForward: false, 
         };
 
         return docClient.query(params).promise();
     },
 
 
-    getAllMovies : async()=>{
-        const params = {
-            TableName : 'Movies',
-            IndexName : 'ReleaseDateIndex'
-        };
-
-        return docClient.scan(params).promise();
-    },
-
-
     filterMoviesByGenre : async(genre)=>{
+        console.log(typeof genre,'-------------');
         const params = {
             TableName : 'Movies',
-            IndexName : 'GenreIndex',
-            KeyConditionExpression : 'Genre = :genre',
+            FilterExpression : 'contains(Genre , :genre)',
             ExpressionAttributeValues : {':genre' : genre}
         };
 
-        return  docClient.query(params).promise();
+        return  docClient.scan(params).promise();
     }
 
 };
