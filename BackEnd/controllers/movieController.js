@@ -37,7 +37,7 @@ exports.createMovie = async (req , res)=>{
     }
 };
 
-//fetch movie details
+//fetch movie details by name
 exports.getMovieDetails = async(req , res)=>{
     const {movieName} = req.params;
     // console.log(movieName,'++++++++++')

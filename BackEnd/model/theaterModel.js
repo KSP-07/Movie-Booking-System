@@ -32,6 +32,7 @@ const TheaterModel = {
               Screen: screen,
               Status: "scheduled",
             },
+            ConditionExpression: "attribute_not_exists(ShowTime)",
           },
         },
         {

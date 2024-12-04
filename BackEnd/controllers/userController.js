@@ -148,14 +148,15 @@ exports.updateUser = async (req, res) => {
   const userId = "USER#" + req.params.userId;
   const { name, phone, password } = req.body;
 
-  if (!name || !phone || !password) {
+  if (!name && !phone && !password) {
     return res.status(406).json({ message: "Empty Request." });
   }
+  
 
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
   if (userId !== JwtUserId) {
-    return res.status(409).json({ message: "Different UserId is used." });
+    return res.status(403).json({ message: "Different UserId is used." });
   }
   const updateExpression = [];
   const expressionAttributeValues = {};

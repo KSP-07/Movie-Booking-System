@@ -56,6 +56,12 @@ exports.addShow = async (req, res) => {
     // console.log(showId,'++++++++++++++');
     return res.status(201).json({showId, message: "Show added successfully",});
   } catch (err) {
+    if (error.code === "ConditionalCheckFailedException") {
+      return res.status(409).json({
+        success: false,
+        message: "ShowTime already exists.",
+      });
+    }
     console.log("Error adding show to the theater ", err);
     res.status(500).json({ message: "Internal Server Error" });
   }

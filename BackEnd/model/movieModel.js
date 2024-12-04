@@ -7,7 +7,7 @@ const MovieModel = {
             TableName : 'Movies',
             Item : movieData,   
         };
-        return docClient.put(params).promise();
+        return await docClient.put(params).promise();
     },
 
 
@@ -54,7 +54,7 @@ const MovieModel = {
             ExpressionAttributeValues : {':genre' : genre}
         };
 
-        return  docClient.scan(params).promise();
+        return await docClient.scan(params).promise();
     }
 
 };

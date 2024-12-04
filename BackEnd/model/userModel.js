@@ -58,7 +58,7 @@ const UserModel = {
         SK: "METADATA",
       },
     };
-    const result = await docClient.get(params);
+    const result = await docClient.get(params).promise();
     if (result && result.Item) {
       console.log("get req res , ", result.Item);
       return result.Item;
