@@ -56,12 +56,22 @@ exports.addShow = async (req, res) => {
     // console.log(showId,'++++++++++++++');
     return res.status(201).json({showId, message: "Show added successfully",});
   } catch (err) {
-    if (error.code === "ConditionalCheckFailedException") {
-      return res.status(409).json({
-        success: false,
-        message: "ShowTime already exists.",
+    // 
+    if (err.code === "TransactionCanceledException") {
+      const cancellationReasons = err.CancellationReasons || [];
+      // console.error("Transaction cancelled, reasons:", JSON.stringify(cancellationReasons, null, 2));
+
+      let response;
+      cancellationReasons.forEach((reason) => {
+          if (reason.Code === "ConditionalCheckFailed") {
+             response ='Movie or Theater not found';
+          }
       });
+      if(response.length > 0){
+        return res.status(404).json({message : response});
+      }
     }
+    
     console.log("Error adding show to the theater ", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -80,7 +90,10 @@ exports.getTheaterShows = async (req, res) => {
   // console.log(theaterId, "+++++++++++------");
   try {
     const data = await TheaterModel.getTheaterShows(theaterId);
-    return res.status(200).json(data.Items);
+    if(data.Items && data.Items.length > 0) return res.status(200).json(data.Items);
+    else{
+      return res.status(404).json({message : 'No shows found'});
+    }
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error fetching theater shows" });
