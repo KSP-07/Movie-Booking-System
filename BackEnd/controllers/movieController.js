@@ -8,7 +8,7 @@ exports.createMovie = async (req , res)=>{
     const {name, description , Genre, Cast , Director, Producer , Rating , ReleaseDate} = req.body;
 
     console.log(req.body);
-    if(!name || !description || !Genre || !Cast || !Director || !Producer || !Rating || !ReleaseDate){
+    if(!name || !description || !Genre || !Cast || !Director || !Producer  || !ReleaseDate){
         return res.status(400).json({message : "Missing required Fields."});
     }
 
@@ -29,11 +29,11 @@ exports.createMovie = async (req , res)=>{
 
     try{
         await MovieModel.createMovie(movieData);
-        res.status(201).json({movieId , message : 'Movie Created Successfully'});
+        return res.status(201).json({movieId , message : 'Movie Created Successfully'});
     }
     catch(err){
         console.log("Error in creating movie " , err);
-        res.status(400).json({movieId , message : 'Error in creating Movie.'});
+        return res.status(400).json({movieId , message : 'Error in creating Movie.'});
     }
 };
 
@@ -42,7 +42,7 @@ exports.getMovieDetails = async(req , res)=>{
     const {movieName} = req.params;
     // console.log(movieName,'++++++++++')
     if(!movieName){
-        res.status(400).json({message : "Movie name is not provided."})
+        return res.status(400).json({message : "Movie name is not provided."});
     }
     try{
         const data = await MovieModel.getMovieByName(movieName);
@@ -70,7 +70,7 @@ exports.getMovieDetails = async(req , res)=>{
     }
     catch(err){
         console.log("Error in fetching movie " , err);
-        res.status(500).json({message : 'Error fetching movie details'});
+        return res.status(500).json({message : 'Error fetching movie details'});
     }
 } 
 
@@ -87,12 +87,21 @@ exports.getSortedMovies  = async(req, res)=>{
 
     try{    
         const data = await MovieModel.getAllMovies(ReleaseDate);
-        res.status(200).json({data, message : 'Movie Found'});
+        // let response;
+        if(data && data.Items && data.Items.length > 0) {
+            // console.log(data.Items);
+            const response = data.Items;
+            return res.status(200).json({response, message : 'Movie Found'});
+        }
+        else{
+            return res.status(404).json({message : "No Movie exist."})
+        }
+        // else return data;
 
     }
     catch(err){
         console.log("Error fetching all movies", err);
-        res.status(500).json({message : "Error Fetching Movies"});
+        return res.status(500).json({message : "Error Fetching Movies"});
     } 
 };
 
@@ -102,15 +111,16 @@ exports.filterByGenre = async(req , res)=>{
     const {genre} = req.query;   //using {} this becasue getting genre as a object so destructuring it.
 
     if(!genre) {
-        res.status(400).json({message : "Genre not provided."});
+        return res.status(400).json({message : "Genre not provided."});
     }
     try{
+    // console.log('455455')
         const data = await MovieModel.filterMoviesByGenre(genre);
-        res.status(200).json(data.Items);
+        return res.status(200).json(data.Items);
     }
     catch(err){
         console.log("Error in fetching movie by genre" , err);
-        res.status(500).json({message : "Error in fetching movie by genre"});
+        return res.status(500).json({message : "Error in fetching movie by genre"});
 
     }
 };

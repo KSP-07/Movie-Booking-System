@@ -9,7 +9,7 @@ exports.createBooking = async (req, res) => {
   const TICKET_PRICE = 200; // ticket price
 
   if(!req.params.theaterId){
-    res.status(400).json({message : "Theater Id is missing."})
+   return res.status(400).json({message : "Theater Id is missing."})
   }
   const theaterId = "THEATER#" + req.params.theaterId;
   const { movieId, showId, seats, showTime } = req.body;
@@ -50,7 +50,7 @@ exports.createBooking = async (req, res) => {
 
     const totalAmt = seats * TICKET_PRICE;
 
-    res.status(200).json({message: "Proceed to payment confirmation",
+    return res.status(200).json({message: "Proceed to payment confirmation",
       totalAmt,
       epochShowTime,
       details: {
@@ -62,7 +62,7 @@ exports.createBooking = async (req, res) => {
     });
   } catch (err) {
     console.error("Error checking seat availability:", err);
-    res.status(500).json({ message: "Internal server error(seat availability)." });
+    return res.status(500).json({ message: "Internal server error(seat availability)." });
   }
 };
 
@@ -134,10 +134,10 @@ exports.confirmBooking = async (req, res) => {
     // Create the booking
     await BookingModel.createBooking(bookingData);
 
-    res.status(201).json({message: "Booking confirmed",bookingId,totalAmt,seats,});
+    return res.status(201).json({message: "Booking confirmed",bookingId,totalAmt,seats,});
   } catch (err) {
     console.error("Error in confirming booking:", err);
-    res.status(500).json({ message: "Error confirming booking." });
+    return res.status(500).json({ message: "Error confirming booking." });
   }
 };
 
@@ -147,7 +147,7 @@ exports.getBooking = async (req, res) => {
   let { userId } = req.params;
 
   if(!bookingId || !userId){
-    res.status(400).json({message : "Missing Required Fields(bookingid or userId"});
+    return res.status(400).json({message : "Missing Required Fields(bookingid or userId"});
   }
   userId = "USER#" + userId;
   bookingId = "BOOKING#" + bookingId;
@@ -165,10 +165,10 @@ exports.getBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking Not Found" });
     }
-    res.status(200).json(booking);
+    return res.status(200).json(booking);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching booking details" });
+    return res.status(500).json({ message: "Error fetching booking details" });
   }
 };
 
@@ -177,17 +177,17 @@ exports.getBookings = async (req, res) => {
   let { userId } = req.params;
 
   if(!userId){
-    res.status(400).json({message : "user id is missing."});
+    return res.status(400).json({message : "user id is missing."});
   }
   userId = "USER#" + userId;
   const { limit = 5, lastKey } = req.query;
 
   try {
     const result = await BookingModel.getBookings(userId,limit,lastKey ? JSON.parse(decodeURIComponent(lastKey)) : undefined);
-    res.status(200).json(result.Items);
+    return res.status(200).json(result.Items);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching bookings" });
+    return res.status(500).json({ message: "Error fetching bookings" });
   }
 };
 
@@ -197,7 +197,7 @@ exports.getBookingsByStatus = async (req, res) => {
   // const {status} = req.query;
   // console.log(status, "+++++");
   if(!userId || !status){
-    res.status(400).json({message : "Missing userId or Status"});
+    return res.status(400).json({message : "Missing userId or Status"});
   }
   userId = "USER#" + userId;
   const JwtUserId = req.user.id;
@@ -213,11 +213,11 @@ exports.getBookingsByStatus = async (req, res) => {
       return res.status(404).json({ message: "No bookings found for the given status" });
     }
 
-    res.status(200).json(bookings);
+    return res.status(200).json(bookings);
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching bookings by status" });
+    return res.status(500).json({ message: "Error fetching bookings by status" });
   }
 };
 
@@ -227,7 +227,7 @@ exports.cancelBooking = async (req, res) => {
   let { userId } = req.params;
 
   if(!bookingId || !userId){
-    res.status(400).json({message : "BookingId or userId is missing."});
+    return res.status(400).json({message : "BookingId or userId is missing."});
   }
   userId = "USER#" + userId;
   bookingId = "BOOKING#" + bookingId;
@@ -271,16 +271,16 @@ exports.cancelBooking = async (req, res) => {
   }
   catch(err){
     console.log(err);
-    res.status(500).json({message : "Error in updating show seats"});
+    return res.status(500).json({message : "Error in updating show seats"});
   }
 
 
   try {
     await BookingModel.cancelBooking(userId, bookingId);
-    res.status(200).json({ message: "Booking cancelled successfully" });
+    return res.status(200).json({ message: "Booking cancelled successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error cancelling booking" });
+    return res.status(500).json({ message: "Error cancelling booking" });
   }
 
 };

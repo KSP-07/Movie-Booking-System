@@ -47,7 +47,7 @@ exports.signupUser = async (req, res) => {
     // console.log('inside controller -------',userData);
     await UserModel.createUser(userData);
     // console.log('---------results ',result);
-    res.status(201).json({ userId, message: "User Created Successfully" });
+    return res.status(201).json({ userId, message: "User Created Successfully" });
   } catch (error) {
     if (error.code === "ConditionalCheckFailedException") {
       return res.status(409).json({
@@ -136,10 +136,10 @@ exports.fetchUser = async (req, res) => {
     const data = await UserModel.getUser(userId);
     // console.log(data,'---------------')
     if (!data) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (err) {
     console.log("Error in fetching user", err);
-    res.status(500).json({ message: "Error fetching user" });
+    return res.status(500).json({ message: "Error fetching user" });
   }
 };
 
@@ -151,7 +151,7 @@ exports.updateUser = async (req, res) => {
   if (!name && !phone && !password) {
     return res.status(406).json({ message: "Empty Request." });
   }
-  
+
 
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
@@ -184,10 +184,10 @@ exports.updateUser = async (req, res) => {
       expressionAttributeValues,
       expressionAttributeNames
     );
-    res.status(200).json({ message: "User Updated Successfully" });
+    return res.status(200).json({ message: "User Updated Successfully" });
   } catch (err) {
     console.log("Error in updating user ", err);
-    res.status(500).json({ message: "Error updating user" });
+    return res.status(500).json({ message: "Error updating user" });
   }
 };
 
@@ -221,13 +221,13 @@ exports.deleteUser = async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching bookings by time" });
+    return res.status(500).json({ message: "Error fetching bookings by time" });
   }
   try {
     await UserModel.deleteUser(userId);
-    res.status(200).json({ message: "User deleted successfully" });
+    return res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
     console.log("Error in deleting user ", err);
-    res.status(500).json({ message: "Error in deleting user" });
+    return res.status(500).json({ message: "Error in deleting user" });
   }
 };

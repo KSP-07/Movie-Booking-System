@@ -47,7 +47,7 @@ const MovieModel = {
 
 
     filterMoviesByGenre : async(genre)=>{
-        console.log(typeof genre,'-------------');
+        // console.log(genre,'-------------');
         const params = {
             TableName : 'Movies',
             FilterExpression : 'contains(Genre , :genre)',

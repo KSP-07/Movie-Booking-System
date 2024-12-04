@@ -22,10 +22,10 @@ exports.createTheater = async (req, res) => {
 
   try {
     await TheaterModel.createTheater(theaterData);
-    res.status(201).json({ theaterId, message: "Theater created successfully" });
+    return res.status(201).json({ theaterId, message: "Theater created successfully" });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Error creating theater" });
+    return res.status(500).json({ message: "Error creating theater" });
   }
 };
 
@@ -38,7 +38,7 @@ exports.addShow = async (req, res) => {
 
   //validate input
   if (!theaterId || !movieId || !showTime || !availableSeats ) {
-    res.status(400).json({ message: "Missing required fields" });
+    return res.status(400).json({ message: "Missing required fields" });
   }
   const showId = uuidv4(); //generate uniqure showID
   //add the show
@@ -63,7 +63,7 @@ exports.addShow = async (req, res) => {
       });
     }
     console.log("Error adding show to the theater ", err);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -73,17 +73,17 @@ exports.getTheaterShows = async (req, res) => {
   let theaterId = req.params.theaterId;
 
   if(!theaterId) {
-    res.status(400).json({message : "theater id missing."})
+    return res.status(400).json({message : "theater id missing."})
   }
   theaterId = "THEATER#" + theaterId;
 
   // console.log(theaterId, "+++++++++++------");
   try {
     const data = await TheaterModel.getTheaterShows(theaterId);
-    res.status(200).json(data.Items);
+    return res.status(200).json(data.Items);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Error fetching theater shows" });
+    return res.status(500).json({ message: "Error fetching theater shows" });
   }
 };
 
