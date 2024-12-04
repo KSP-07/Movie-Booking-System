@@ -32,7 +32,6 @@ const TheaterModel = {
               Screen: screen,
               Status: "scheduled",
             },
-            ConditionExpression: "attribute_not_exists(ShowTime)",
           },
         },
         {
@@ -61,7 +60,8 @@ const TheaterModel = {
     const params = {
       TableName: "Movies",
       KeyConditionExpression: "PK = :theaterId",
-      ExpressionAttributeValues: { ":theaterId": theaterId },
+      FilterExpression : "Entity = :entity",
+      ExpressionAttributeValues: { ":theaterId": theaterId , ":entity" : "SHOW" },
     };
     return docClient.query(params).promise();
   },
