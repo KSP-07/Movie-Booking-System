@@ -1,4 +1,4 @@
-const UserModel = require("../model/userModel");   
+const UserModel = require("../model/userModel");
 const BookingModel = require("../model/bookingModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -9,23 +9,24 @@ exports.signupUser = async (req, res) => {
   if (!name || !email || !phone || !password) {
     return res.status(400).json({ message: "Missing required fields." });
   }
-  if (!role || role !== "Admin") {
+
+  if (role !== "Admin") {
     role = "notAdmin";
   }
 
   const userId = `USER#${email}`; //creating user Id
 
+  // Check if the user already exists in the database
+  // try {
+  //   const existingUser = await UserModel.getUser(userId); //this check will fail in case of eventual consistency. so I have also used ConditionalExpression to ensure consistency.
+  //   if (existingUser) {
+  //     return res.status(409).json({ message: "User already exists." });
+  //   }
+  // } catch (err) {
+  //   console.log("Error checking if user exists", err);
+  //   return res.status(500).json({ message: "Error checking if user exists." });
+  // }
 
- // Check if the user already exists in the database
- try {
-  const existingUser = await UserModel.getUser(userId);  //this check will fail in case of eventual consistency. so I have also used ConditionalExpression to ensure consistency.
-  if (existingUser) {
-    return res.status(409).json({ message: "User already exists." });
-  }
-} catch (err) {
-  console.log("Error checking if user exists", err);
-  return res.status(500).json({ message: "Error checking if user exists." });
-}
   //hashing password
   const saltRounds = 10;
   hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -47,9 +48,20 @@ exports.signupUser = async (req, res) => {
     await UserModel.createUser(userData);
     // console.log('---------results ',result);
     res.status(201).json({ userId, message: "User Created Successfully" });
-  } catch (err) {
-    console.log("Error in creating user", err);
-    res.status(500).json({ message: "Error creating user" });
+  } catch (error) {
+    if (error.code === "ConditionalCheckFailedException") {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists.",
+      });
+    }
+    // Handle other errors
+    console.error("Error querying DynamoDB (createUser):", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while creating the user.",
+      errorDetails: error.message,
+    });
   }
 };
 
@@ -59,36 +71,30 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    //validate input
+    // Validate input
     if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "Email and password both are required" });
+        .json({ message: "Email and password are both required." });
     }
 
-    //fetch user by email
-    const user = await UserModel.loginUser(email);
+    // Fetch user by email
+    const userResponse = await UserModel.loginUser(email);
 
-    // console.log(user,'----===+++');
-    // console.log('=========USER++====='  , user);
-    if (!user) {
-      return res.status(404).json({ message: "User Not found" });
+    // Handle user response
+    if (!userResponse.success) {
+      return res.status(userResponse.statusCode).json({
+        message: userResponse.message,
+      });
     }
 
-    // console.log('=======');
-    // console.log(user.Email);
-    // console.log(user.Password);
-    // console.log(user.Role);
+    const user = userResponse.data;
 
-
-    //compare passwords
+    // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.Password);
-    // console.log('=======');
-
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid Credentials" });
+      return res.status(401).json({ message: "Invalid credentials." });
     }
-
 
     // Generate JWT
     const token = jwt.sign(
@@ -98,26 +104,22 @@ exports.loginUser = async (req, res) => {
         role: user.Role,
       },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "24h",
-      }
+      { expiresIn: "24h" }
     );
 
-    //  // Send the token in the response header
-    //  res.setHeader("Authorization", `Bearer ${token}`);
-
+    // Return success response with token
     return res.status(200).json({
-      message: "Login Successful",
-      userId: user.userId,
-      name: user.name,
-      email: user.email,
-      token: `Bearer ${token}`,  //adding brearer is standard scheme and it helps server identify the type of token, so it is for authentication and authorization
+      message: "Login successful.",
+      userId: user.UserId,
+      name: user.Name,
+      email: user.Email,
+      token: `Bearer ${token}`, // Standard Bearer token format
     });
-  } catch (err) {
-    console.error("Error logging in user:", err);
-    return res
-      .status(500)
-      .json({ message: "Internal server error, not logged in" });
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    return res.status(500).json({
+      message: "Internal server error. Unable to log in.",
+    });
   }
 };
 
@@ -127,8 +129,8 @@ exports.fetchUser = async (req, res) => {
   // console.log('++----' , userId);
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
-  if(userId !== JwtUserId){
-      return res.status(409).json({message : "Different UserId is used."});
+  if (userId !== JwtUserId) {
+    return res.status(409).json({ message: "Different UserId is used." });
   }
   try {
     const data = await UserModel.getUser(userId);
@@ -144,16 +146,16 @@ exports.fetchUser = async (req, res) => {
 //update User
 exports.updateUser = async (req, res) => {
   const userId = "USER#" + req.params.userId;
-  const { name, phone , password } = req.body;
+  const { name, phone, password } = req.body;
 
-  if(!name || !phone || !password){
-    return res.status(406).json({message : "Empty Request."})
+  if (!name || !phone || !password) {
+    return res.status(406).json({ message: "Empty Request." });
   }
 
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
-  if(userId !== JwtUserId){
-      return res.status(409).json({message : "Different UserId is used."});
+  if (userId !== JwtUserId) {
+    return res.status(409).json({ message: "Different UserId is used." });
   }
   const updateExpression = [];
   const expressionAttributeValues = {};
@@ -169,7 +171,7 @@ exports.updateUser = async (req, res) => {
     expressionAttributeValues[":phone"] = phone;
   }
   if (password) {
-    const hashedPassword = await bcrypt.hash(password , 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     updateExpression.push("Password = :password");
     expressionAttributeValues[":password"] = hashedPassword;
   }
@@ -192,29 +194,33 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   // const userId = req.params.userId;
 
-  let {userId} = req.params;
+  let { userId } = req.params;
   userId = "USER#" + userId;
 
   // const status = 'confirmed';
 
-  const currentTime = Math.floor(Date.now()/1000);  //converting time to epoch time
+  const currentTime = Math.floor(Date.now() / 1000); //converting time to epoch time
 
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
-  if(userId !== JwtUserId){
-      return res.status(409).json({message : "Different UserId is used."});
+  if (userId !== JwtUserId) {
+    return res.status(409).json({ message: "Different UserId is used." });
   }
 
-  try{
-      const bookings = await BookingModel.getUpcomingBookings(userId, currentTime);
+  try {
+    const bookings = await BookingModel.getUpcomingBookings(
+      userId,
+      currentTime
+    );
 
-      if(bookings.length){
-          return res.status(404).json({message :'You have upcoming bookings, can not delte account'});
-      }
-  }
-  catch(err){
-      console.error(err);
-      res.status(500).json({ message: 'Error fetching bookings by time' });
+    if (bookings.length) {
+      return res
+        .status(404)
+        .json({ message: "You have upcoming bookings, can not delte account" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching bookings by time" });
   }
   try {
     await UserModel.deleteUser(userId);

@@ -13,7 +13,7 @@ const authenticate = (requiredRole = null) => {
         authHeader = req.headers.value; // Extract the token
       }
     } else {
-      // Fallback to standard structure
+      // to handle standard structure
       authHeader = req.headers["authorization"];
     }
     console.log("Authorization Header:", authHeader);
@@ -23,11 +23,12 @@ const authenticate = (requiredRole = null) => {
       return res.status(401).json({ message: "Authorization header missing" });
     }
 
-    // Ensure the token follows the Bearer <token> format
+    // the token follows the Bearer <token> format so it is like 0->Bearer and 1-><Token>
     const token = authHeader.split(" ")[1];
 
     // const token = req.headers.authorization?.split(' ')[1];
 
+//checking if payload exists
     if (!token) {
       return res
         .status(401)
@@ -37,20 +38,13 @@ const authenticate = (requiredRole = null) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // //for managing access for admin roles
-      // if(decoded.role !=='Admin'){
-      //     return res.status(403).json({message : 'Access Denied. Admin role required'})
-      // }
-
       req.user = decoded; //attach user information to the request
 
-      console.log(requiredRole, '==========' , decoded.role,'-------');
+      // console.log(requiredRole, '==========' , decoded.role,'-------');
 
       // If a specific role is required, check it
       if (requiredRole && decoded.role !== requiredRole) {
-        return res
-          .status(403)
-          .json({ message: `Access denied. ${requiredRole} role required.` });
+        return res.status(403).json({ message: `Access denied. ${requiredRole} role required.` });
       }
 
       // console.log(req.user,'in auth file');
