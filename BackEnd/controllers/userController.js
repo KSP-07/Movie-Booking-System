@@ -209,12 +209,13 @@ exports.deleteUser = async (req, res) => {
   }
 
   try {
+    // console.log('curre' , currentTime.toString());
     const bookings = await BookingModel.getUpcomingBookings(
       userId,
-      currentTime
+      currentTime.toString()
     );
-
-    if (bookings.length) {
+    // console.log('-=-=-=-=-',bookings , userId);
+    if (bookings.length > 0) {
       return res
         .status(404)
         .json({ message: "You have upcoming bookings, can not delte account" });

@@ -64,20 +64,23 @@ const BookingModel = {
 
 //get upcoming bookings filtered by status 
 getUpcomingBookings: async (userId, currentTime) => {
-    const params = {
-        TableName : "Movies",
-        KeyConditionExpression : 'PK = :pk AND SK >= :currentTime',
-        FilterExpression : '#status = :status',
-        ExpressionAttributeNames :{
-          '#status' : 'Status',
-        },
-        ExpressionAttributeValues : {
-            ':pk' : userId,
-            ':status' : 'confirmed',
-            ':currentTime' : currentTime.toString(),
-        }
-    };
+  // console.log('dfdfsdfsdfsd' , userId ,'    777777    ', currentTime);
+  const params = {
+    TableName: "Movies",
+    IndexName: "BookingDateIndex", 
+    KeyConditionExpression: 'PK = :pk AND BookingDate >= :currentTime',
+    FilterExpression: '#status = :status',
+    ExpressionAttributeNames: {
+        '#status': 'Status',
+    },
+    ExpressionAttributeValues: {
+        ':pk': userId,
+        ':currentTime': currentTime,
+        ':status': 'confirmed',
+    },
+};
     const result = await docClient.query(params).promise();
+    // console.log("upcoming BOokins ," , result);
     return result.Items;
   },
 
@@ -114,7 +117,7 @@ getUpcomingBookings: async (userId, currentTime) => {
       }
     }
     const result = await docClient.get(params).promise();
-    console.log(result,'----====')
+    // console.log(result,'----====')
     return result;
   },
 
@@ -133,7 +136,8 @@ getUpcomingBookings: async (userId, currentTime) => {
         ReturnValues: "UPDATED_NEW",
     };
   
-    await docClient.update(params).promise();
+    const result = await docClient.update(params).promise();
+    return result;
   },
 
 };
