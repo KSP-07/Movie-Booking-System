@@ -224,7 +224,25 @@ exports.deleteUser = async (req, res) => {
     console.error(err);
     return res.status(500).json({ message: "Error fetching bookings by time" });
   }
+
+
   try {
+     // Fetch User Details to get bookings
+
+    const userData = await UserModel.getUser(userId);
+
+    if (!userData.Item) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const bookings = userData.Item.bookings || [];
+
+    // Delete All Bookings
+    bookings.map(async(bookingId)=>{
+      await UserModel.deleteAllBookings(userId , bookingId);
+    });
+
+    //Delete user
     await UserModel.deleteUser(userId);
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
