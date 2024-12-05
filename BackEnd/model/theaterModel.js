@@ -11,10 +11,17 @@ const TheaterModel = {
     return docClient.put(params).promise();
   },
 
-  addShowToTheater: async (theaterId,movieId,showTime,availableSeats,screen,showId) => {
+  addShowToTheater: async (
+    theaterId,
+    movieId,
+    showTime,
+    availableSeats,
+    screen,
+    showId
+  ) => {
     //   const showId = uuidv4();  //generate uniqure showID
-    console.log(theaterId,'---====')
-    console.log(movieId,'---====')
+    console.log(theaterId, "---====");
+    console.log(movieId, "---====");
     const params = {
       TransactItems: [
         {
@@ -32,26 +39,28 @@ const TheaterModel = {
               Screen: screen,
               Status: "scheduled",
             },
-            ConditionExpression:"attribute_not_exists(PK) AND attribute_not_exists(MovieId)"
+            ConditionExpression:
+              "attribute_not_exists(PK) AND attribute_not_exists(MovieId)",
           },
         },
         {
-            Update :{
-                TableName: "Movies",
-                Key : {
-                    PK : theaterId,
-                    SK: "MetaData"
-                } ,
-                UpdateExpression : "SET Shows = list_append(if_not_exists(Shows, :emptyList), :newShow)" ,
-                // ExpressionAttributeNames: {
-                //     "#shows": "Shows",
-                //   },
-                  ExpressionAttributeValues: {
-                    ":newShow": [showId],
-                    ":emptyList": [],
-                  },  
-            }
-        }
+          Update: {
+            TableName: "Movies",
+            Key: {
+              PK: theaterId,
+              SK: "MetaData",
+            },
+            UpdateExpression:
+              "SET Shows = list_append(if_not_exists(Shows, :emptyList), :newShow)",
+            // ExpressionAttributeNames: {
+            //     "#shows": "Shows",
+            //   },
+            ExpressionAttributeValues: {
+              ":newShow": [showId],
+              ":emptyList": [],
+            },
+          },
+        },
       ],
     };
     return docClient.transactWrite(params).promise();
@@ -61,8 +70,8 @@ const TheaterModel = {
     const params = {
       TableName: "Movies",
       KeyConditionExpression: "PK = :theaterId",
-      FilterExpression : "Entity = :entity",
-      ExpressionAttributeValues: { ":theaterId": theaterId , ":entity" : "SHOW" },
+      FilterExpression: "Entity = :entity",
+      ExpressionAttributeValues: { ":theaterId": theaterId, ":entity": "SHOW" },
     };
     return docClient.query(params).promise();
   },
@@ -81,21 +90,21 @@ const TheaterModel = {
   //   try {
   //       // Query to fetch theater details (which includes shows)
   //       const result = await docClient.query(params).promise();
-        
+
   //       if (result.Items.length > 0) {
   //           // Assuming the "Shows" array is part of the result (e.g., in "result.Items[0].Shows")
   //           const theater = result.Items[0];
   //           console.log(theater,'-+-=');
   //           // Filter the shows array to find the show with the specified showId
   //           const showDetails = theater.Shows.find(show => show.showId === showId);
-            
+
   //           if (showDetails) {
   //               return showDetails; // Return the found show details
   //           } else {
   //               return null; // Return null if showId is not found
   //           }
   //       }
-        
+
   //       return null; // Return null if no theater is found
 
   //   } catch (error) {
@@ -103,9 +112,6 @@ const TheaterModel = {
   //       throw error;
   //   }
   // },
-
-
-
 };
 
 module.exports = TheaterModel;

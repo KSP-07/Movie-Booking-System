@@ -22,7 +22,9 @@ exports.createTheater = async (req, res) => {
 
   try {
     await TheaterModel.createTheater(theaterData);
-    return res.status(201).json({ theaterId, message: "Theater created successfully" });
+    return res
+      .status(201)
+      .json({ theaterId, message: "Theater created successfully" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Error creating theater" });
@@ -37,7 +39,7 @@ exports.addShow = async (req, res) => {
   const { showTime, availableSeats, screen } = req.body;
 
   //validate input
-  if (!theaterId || !movieId || !showTime || !availableSeats ) {
+  if (!theaterId || !movieId || !showTime || !availableSeats) {
     return res.status(400).json({ message: "Missing required fields" });
   }
   const showId = uuidv4(); //generate uniqure showID
@@ -54,24 +56,24 @@ exports.addShow = async (req, res) => {
     );
 
     // console.log(showId,'++++++++++++++');
-    return res.status(201).json({showId, message: "Show added successfully",});
+    return res.status(201).json({ showId, message: "Show added successfully" });
   } catch (err) {
-    // 
+    //
     if (err.code === "TransactionCanceledException") {
       const cancellationReasons = err.CancellationReasons || [];
       // console.error("Transaction cancelled, reasons:", JSON.stringify(cancellationReasons, null, 2));
 
       let response;
       cancellationReasons.forEach((reason) => {
-          if (reason.Code === "ConditionalCheckFailed") {
-             response ='Movie or Theater not found';
-          }
+        if (reason.Code === "ConditionalCheckFailed") {
+          response = "Movie or Theater not found";
+        }
       });
-      if(response.length > 0){
-        return res.status(404).json({message : response});
+      if (response.length > 0) {
+        return res.status(404).json({ message: response });
       }
     }
-    
+
     console.log("Error adding show to the theater ", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -82,17 +84,18 @@ exports.getTheaterShows = async (req, res) => {
   // console.log(req.params,'----===++');
   let theaterId = req.params.theaterId;
 
-  if(!theaterId) {
-    return res.status(400).json({message : "theater id missing."})
+  if (!theaterId) {
+    return res.status(400).json({ message: "theater id missing." });
   }
   theaterId = "THEATER#" + theaterId;
 
   // console.log(theaterId, "+++++++++++------");
   try {
     const data = await TheaterModel.getTheaterShows(theaterId);
-    if(data.Items && data.Items.length > 0) return res.status(200).json(data.Items);
-    else{
-      return res.status(404).json({message : 'No shows found'});
+    if (data.Items && data.Items.length > 0)
+      return res.status(200).json(data.Items);
+    else {
+      return res.status(404).json({ message: "No shows found" });
     }
   } catch (err) {
     console.log(err);

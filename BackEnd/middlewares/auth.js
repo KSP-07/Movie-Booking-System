@@ -28,7 +28,7 @@ const authenticate = (requiredRole = null) => {
 
     // const token = req.headers.authorization?.split(' ')[1];
 
-//checking if payload exists
+    //checking if payload exists
     if (!token) {
       return res
         .status(401)
@@ -44,7 +44,9 @@ const authenticate = (requiredRole = null) => {
 
       // If a specific role is required, check it
       if (requiredRole && decoded.role !== requiredRole) {
-        return res.status(403).json({ message: `Access denied. ${requiredRole} role required.` });
+        return res
+          .status(403)
+          .json({ message: `Access denied. ${requiredRole} role required.` });
       }
 
       // console.log(req.user,'in auth file');

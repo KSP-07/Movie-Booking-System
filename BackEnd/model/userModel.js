@@ -86,14 +86,14 @@ const UserModel = {
 
     return docClient.update(params).promise();
   },
-  deleteAllBookings : async(pk , sk)=>{
+  deleteAllBookings: async (pk, sk) => {
     const params = {
-      TableName : "Movies",
-      Key : {
-        PK : pk,
-        SK : sk
-      }
-    }
+      TableName: "Movies",
+      Key: {
+        PK: pk,
+        SK: sk,
+      },
+    };
     return docClient.delete(params).promise();
   },
 

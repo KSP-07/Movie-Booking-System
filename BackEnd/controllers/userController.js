@@ -47,7 +47,9 @@ exports.signupUser = async (req, res) => {
     // console.log('inside controller -------',userData);
     await UserModel.createUser(userData);
     // console.log('---------results ',result);
-    return res.status(201).json({ userId, message: "User Created Successfully" });
+    return res
+      .status(201)
+      .json({ userId, message: "User Created Successfully" });
   } catch (error) {
     if (error.code === "ConditionalCheckFailedException") {
       return res.status(409).json({
@@ -152,7 +154,6 @@ exports.updateUser = async (req, res) => {
     return res.status(406).json({ message: "Empty Request." });
   }
 
-
   const JwtUserId = req.user.id; //extracting userId from token to verify with the userId passed in the params.
 
   if (userId !== JwtUserId) {
@@ -225,9 +226,8 @@ exports.deleteUser = async (req, res) => {
     return res.status(500).json({ message: "Error fetching bookings by time" });
   }
 
-
   try {
-     // Fetch User Details to get bookings
+    // Fetch User Details to get bookings
 
     const userData = await UserModel.getUser(userId);
 
@@ -238,8 +238,8 @@ exports.deleteUser = async (req, res) => {
     const bookings = userData.Item.bookings || [];
 
     // Delete All Bookings
-    bookings.map(async(bookingId)=>{
-      await UserModel.deleteAllBookings(userId , bookingId);
+    bookings.map(async (bookingId) => {
+      await UserModel.deleteAllBookings(userId, bookingId);
     });
 
     //Delete user
