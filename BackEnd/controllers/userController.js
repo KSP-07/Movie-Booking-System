@@ -5,7 +5,9 @@ const jwt = require("jsonwebtoken");
 
 //Signup user
 exports.signupUser = async (req, res) => {
+  console.log(req.body , 'req body');
   let { name, email, phone, password, role } = req.body;
+  console.log(name , email , phone, password);
   if (!name || !email || !phone || !password) {
     return res.status(400).json({ message: "Missing required fields." });
   }

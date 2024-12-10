@@ -7,23 +7,23 @@ exports.createMovie = async (req, res) => {
   const {
     name,
     description,
-    Genre,
-    Cast,
-    Director,
-    Producer,
-    Rating,
-    ReleaseDate,
+    genre,
+    cast,
+   director,
+    producer,
+    rating,
+    releaseDate,
   } = req.body;
 
   console.log(req.body);
   if (
     !name ||
     !description ||
-    !Genre ||
-    !Cast ||
-    !Director ||
-    !Producer ||
-    !ReleaseDate
+    !genre ||
+    !cast ||
+    !director ||
+    !producer ||
+    !releaseDate
   ) {
     return res.status(400).json({ message: "Missing required Fields." });
   }
@@ -35,12 +35,12 @@ exports.createMovie = async (req, res) => {
     Entity: "MOVIE",
     MovieName: name,
     Description: description,
-    Genre: Genre,
-    Cast: Cast,
-    Director: Director,
-    Producer: Producer,
-    Rating: Rating,
-    ReleaseDate: ReleaseDate,
+    Genre: genre,
+    Cast: cast,
+    Director: director,
+    Producer: producer,
+    Rating: rating,
+    ReleaseDate: releaseDate,
   };
 
   try {
@@ -69,20 +69,11 @@ exports.getMovieDetails = async (req, res) => {
     if (!data.Items || data.Items.length === 0) {
       return res.status(404).json({ message: "Movie Not Found" });
     } else {
-      const movie = data.Items[0];
+      const response = data.Items[0];
       // return res.status(200).json({movie, message : "Movie found successfully."})
       return res.status(200).json({
+          response,
         message: "Movie Found",
-        movie: {
-          name: movie.MovieName,
-          description: movie.Description,
-          genre: movie.Genre,
-          cast: movie.Cast,
-          director: movie.Director,
-          producer: movie.Producer,
-          rating: movie.Rating,
-          releaseDate: movie.ReleaseDate,
-        },
       });
     }
   } catch (err) {
@@ -98,11 +89,26 @@ exports.getSortedMovies = async (req, res) => {
 
   // console.log(ReleaseDate,'---=====');
   if (!ReleaseDate) {
-    return res.status(400).json({ message: "Release date is required" });
+    try {
+        const data = await MovieModel.getAllMovies();
+        // let response;
+        if (data && data.Items && data.Items.length > 0) {
+          // console.log(data.Items);
+          const response = data.Items;
+          return res.status(200).json({ response, message: "Movie Found" });
+        } else {
+          return res.status(404).json({ message: "No Movie exist." });
+        }
+        // else return data;
+      } catch (err) {
+        console.log("Error fetching all movies", err);
+        return res.status(500).json({ message: "Error Fetching Movies" });
+      }
+    // return res.status(400).json({ message: "Release date is required" });
   }
 
   try {
-    const data = await MovieModel.getAllMovies(ReleaseDate);
+    const data = await MovieModel.getAllMoviesByDate(ReleaseDate);
     // let response;
     if (data && data.Items && data.Items.length > 0) {
       // console.log(data.Items);

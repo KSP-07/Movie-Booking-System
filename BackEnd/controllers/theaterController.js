@@ -31,6 +31,29 @@ exports.createTheater = async (req, res) => {
   }
 };
 
+// handle request for fetching all theaters
+exports.getAllTheaters = async (req, res) => {
+  try {
+    let {id} = req.params;
+
+    id = "THEATER#" + id;
+    // Call the model method to fetch theaters
+    const theaters = await TheaterModel.getTheaters(id);
+    
+    if (!theaters || theaters.length === 0) {
+      return res.status(404).json({ message: "No theaters found." });
+    }
+
+    return res.status(200).json({
+      message: "Theaters fetched successfully",
+      theaters: theaters,
+    });
+  } catch (err) {
+    console.error("Error fetching theaters:", err);
+    return res.status(500).json({ message: "Error fetching theaters." });
+  }
+};
+
 //add the show to the theater
 exports.addShow = async (req, res) => {
   let { theaterId, movieId } = req.params;

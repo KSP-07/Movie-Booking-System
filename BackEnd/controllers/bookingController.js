@@ -11,9 +11,9 @@ exports.createBooking = async (req, res) => {
     return res.status(400).json({ message: "Theater Id is missing." });
   }
   const theaterId = "THEATER#" + req.params.theaterId;
-  const { movieId, showId, seats, showTime } = req.body;
+  const { movieName ,movieId, showId, seats, showTime } = req.body;
 
-  if (!movieId || !showId || !seats || seats <= 0) {
+  if (!movieName || !movieId || !showId || !seats || seats <= 0) {
     return res
       .status(400)
       .json({ message: "Invalid movieId or showId or seats information." });
@@ -55,13 +55,15 @@ exports.createBooking = async (req, res) => {
 
     return res.status(200).json({
       message: "Proceed to payment confirmation",
-      totalAmt,
-      epochShowTime,
-      details: {
+      data: {
+        totalAmt,
+        epochShowTime,
         seats,
         availableSeats,
         showId,
         userId,
+        movieId,
+        movieName
       },
     });
   } catch (err) {
@@ -75,6 +77,7 @@ exports.createBooking = async (req, res) => {
 // Confirm booking after payment
 exports.confirmBooking = async (req, res) => {
   const {
+    movieName,
     theaterId,
     movieId,
     showTime,
@@ -84,7 +87,7 @@ exports.confirmBooking = async (req, res) => {
     totalAmt,
   } = req.body;
 
-  if (!theaterId || !movieId || !showId || !seats || seats <= 0 || !totalAmt) {
+  if (!movieName || !theaterId || !movieId || !showId || !seats || seats <= 0 || !totalAmt) {
     return res.status(400).json({ message: "Missing required fields." });
   }
 
@@ -107,6 +110,7 @@ exports.confirmBooking = async (req, res) => {
     PK: userId,
     SK: bookingId,
     Entity: "BOOKING",
+    MovieName : movieName,
     BookingId: bookingId,
     ShowId: showId,
     Seats: seats,
@@ -171,10 +175,7 @@ exports.confirmBooking = async (req, res) => {
       .status(201)
       .json({
         message: "Booking confirmed",
-        bookingId,
-        totalAmt,
-        seats,
-        bookingData,
+        bookingData
       });
   } catch (err) {
     console.error("Error in confirming booking:", err);
@@ -222,7 +223,7 @@ exports.getBookings = async (req, res) => {
     return res.status(400).json({ message: "user id is missing." });
   }
   userId = "USER#" + userId;
-  const { limit = 5, lastKey } = req.query;
+  const { limit = 50, lastKey } = req.query;
 
   try {
     const result = await BookingModel.getBookings(

@@ -11,6 +11,25 @@ const TheaterModel = {
     return docClient.put(params).promise();
   },
 
+  //this doesn't work rn
+  // Fetch all theaters based on Entity (PK = "THEATER")
+ getTheaters : async (pk) => {
+    const params = {
+      TableName: "Movies", // Replace with your actual table name
+      KeyConditionExpression: "PK = :pk", // PK is the partition key, and its value is "THEATER"
+      ExpressionAttributeValues: {
+        ":pk": pk, // We want all items where PK is 'THEATER'
+      },
+    };
+  
+    try {
+      const result = await docClient.query(params).promise(); // Execute the query
+      return result.Items; // Return the list of theaters
+    } catch (err) {
+      console.error("Error querying theaters:", err);
+      throw new Error("Unable to fetch theaters"); // Throw error to be handled by the controller
+    }
+  },
   addShowToTheater: async (
     theaterId,
     movieId,

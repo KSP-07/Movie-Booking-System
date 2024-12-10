@@ -26,7 +26,7 @@ const MovieModel = {
     return result;
   },
 
-  getAllMovies: async (ReleaseDate) => {
+  getAllMoviesByDate: async (ReleaseDate) => {
     // console.log(ReleaseDate,'---=====');
     const params = {
       TableName: "Movies",
@@ -36,6 +36,21 @@ const MovieModel = {
       ExpressionAttributeValues: {
         ":entity": "MOVIE",
         ":releaseDate": ReleaseDate,
+      },
+      ScanIndexForward: false,
+    };
+
+    return docClient.query(params).promise();
+  },
+  getAllMovies: async () => {
+    // console.log(ReleaseDate,'---=====');
+    const params = {
+      TableName: "Movies",
+      IndexName: "MovieReleaseDateIndex",
+      KeyConditionExpression:
+        "Entity = :entity",
+      ExpressionAttributeValues: {
+        ":entity": "MOVIE",
       },
       ScanIndexForward: false,
     };
