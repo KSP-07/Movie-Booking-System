@@ -50,7 +50,7 @@ const UserModel = {
   },
 
   getUser: async (userId) => {
-    // console.log(userId, '------------------');
+    console.log(userId, '------------------');
     const params = {
       TableName: "Movies",
       Key: {
@@ -60,7 +60,7 @@ const UserModel = {
     };
     const result = await docClient.get(params).promise();
     if (result && result.Item) {
-      console.log("get req res , ", result.Item);
+      // console.log("get req res , ", result.Item);
       return result.Item;
     } else {
       console.log("error is getting user");
@@ -83,7 +83,7 @@ const UserModel = {
       ExpressionAttributeValues: expressionAttributeValues,
       ExpressionAttributeNames: expressionAttributeNames,
     };
-
+    
     return docClient.update(params).promise();
   },
   deleteAllBookings: async (pk, sk) => {
@@ -96,8 +96,9 @@ const UserModel = {
     };
     return docClient.delete(params).promise();
   },
-
+  
   deleteUser: async (userId) => {
+    console.log("----inside deleteuser model", userId);
     const params = {
       TableName: "Movies",
       Key: { PK: userId, SK: "METADATA" },

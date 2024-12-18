@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 //Signup user
 exports.signupUser = async (req, res) => {
-  console.log(req.body , 'req body');
+  // console.log(req.body , 'req body');
   let { name, email, phone, password, role } = req.body;
   console.log(name , email , phone, password);
   if (!name || !email || !phone || !password) {
@@ -232,18 +232,20 @@ exports.deleteUser = async (req, res) => {
     // Fetch User Details to get bookings
 
     const userData = await UserModel.getUser(userId);
-
-    if (!userData.Item) {
+    // console.log(userData, '---323232----');
+    if (!userData) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const bookings = userData.Item.bookings || [];
+    const bookings = userData.bookings || [];
 
     // Delete All Bookings
     bookings.map(async (bookingId) => {
       await UserModel.deleteAllBookings(userId, bookingId);
     });
+    // await Promise.all(bookings.map((bookingId) => UserModel.deleteAllBookings(userId, bookingId)));
 
+    console.log("trying to delete user: ");
     //Delete user
     await UserModel.deleteUser(userId);
     return res.status(200).json({ message: "User deleted successfully" });

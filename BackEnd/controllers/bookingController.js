@@ -28,7 +28,7 @@ exports.createBooking = async (req, res) => {
     // Fetching the show details to check if seat are available
     // const result = await TheaterModel.getTheaterShows(theaterId);
     const result = await BookingModel.getShowDetails(theaterId, sk);
-    // console.log(result,'0000000000000000000');   //for checking the available seats.
+    console.log(result,'0000000000000000000');   //for checking the available seats.
     let showDetails;
     if (result.Item) {
       showDetails = result.Item;
@@ -45,7 +45,8 @@ exports.createBooking = async (req, res) => {
 
     // console.log(availableSeats,'-----');
 
-    if (availableSeats < seats) {
+    if (Number(availableSeats) < Number(seats)) {
+      console.log(typeof availableSeats , typeof seats , 'types popf ');
       return res
         .status(400)
         .json({ message: "Not enough seats available.", availableSeats });
@@ -63,7 +64,8 @@ exports.createBooking = async (req, res) => {
         showId,
         userId,
         movieId,
-        movieName
+        movieName, 
+        theaterId
       },
     });
   } catch (err) {
@@ -123,16 +125,16 @@ exports.confirmBooking = async (req, res) => {
 
   console.log("Booking Date cr , ", epochShowTime.toString());
   try {
-    const sk = movieId + "ShowId" + showId;
+    const sk = movieId + "ShowId#" + showId;
     // console.log('2222222');
     // Deduct the seats from the show
 
     // const result = await BookingModel.getShowDetails(theaterId, sk);
     // console.log(result,'00000000001111111');
 
-    // console.log('90909090');
+    console.log('    ',sk,'0909090909090');
     const result = await BookingModel.getShowDetails(theaterId, sk);
-    // console.log(result,'0000000000000000000');   //for checking the available seats.
+    console.log(result,'0000000000000000000');   //for checking the available seats.
     let showDetails;
     if (result.Item) {
       showDetails = result.Item;
@@ -288,7 +290,7 @@ exports.cancelBooking = async (req, res) => {
   userId = "USER#" + userId;
   bookingId = "BOOKING#" + bookingId;
   const jwtUserId = req.user.id;
-  // console.log(bookingId,'++++');
+  console.log(bookingId,'++++');
 
   if (userId !== jwtUserId) {
     return res.status(409).json({ message: "Different UserId is used." });
@@ -308,14 +310,15 @@ exports.cancelBooking = async (req, res) => {
     const currentTime = Math.floor(Date.now() / 1000).toString();
 
     // console.log(showTime , '0-----' , currentTime);
-    // console.log(bookingData,'bod;fdfd')
+    console.log(bookingData,'bod;fdfd')
     if (Number(showTime) <= Number(currentTime)) {
       return res
         .status(409)
         .json({ message: "Can not cancel after the show has ended" });
     }
 
-    const sk = movieId + "ShowId" + showId;
+    console.log(bookingData , 'lafladlfadslfad')
+    const sk = movieId + "ShowId#" + showId;
 
     const result = await BookingModel.getShowDetails(theaterId, sk);
     let showDetails;

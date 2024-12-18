@@ -104,6 +104,8 @@ const BookingModel = {
   },
 
   getShowDetails: async (pk, sk) => {
+
+    console.log(pk , '      ' , sk);
     const params = {
       TableName: "Movies",
       Key: {
